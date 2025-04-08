@@ -230,7 +230,7 @@ export default function Home() {
 
             {/* Search results dropdown */}
             {showDropdown && searchResults.length > 0 && (
-              <div className="absolute top-full mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg z-50">
+              <div className={`absolute ${isSticky ? 'bottom-full mb-1' : 'top-full mt-1'} w-full rounded-md border border-gray-200 bg-white shadow-lg z-50`}>
                 <div className="max-h-60 overflow-auto py-1">
                   {searchResults.map((track) => (
                     <div
@@ -277,9 +277,9 @@ export default function Home() {
       </header>
 
       <main className="px-4 md:px-6 pb-4">
-        <h2 className="text-center font-instrument text-3xl md:text-5xl text-[#333] mb-6 md:mb-8 font-bold tracking-tight">
+        <h1 className="text-center font-instrument text-3xl md:text-5xl text-[#333] mb-6 md:mb-8 font-bold tracking-tight">
           What's your favorite song mean to you?
-        </h2>
+        </h1>
 
         {/* Main search input */}
         <div className="max-w-xs mx-auto mb-8 md:mb-10">
@@ -383,15 +383,7 @@ export default function Home() {
       <footer className="px-4 py-4 md:py-6 text-center text-sm text-[#666]">
         <div className="container mx-auto">
           <p>
-            Built by{" "}
-            <a
-              href="https://x.com/akhil_bvs"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#333] hover:underline"
-            >
-              Akhil
-            </a>
+            A CultureWare Product.
           </p>
         </div>
       </footer>

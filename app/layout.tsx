@@ -3,21 +3,19 @@ import type { Metadata } from "next"
 import { Playfair_Display, Lato, Instrument_Serif } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import PostHogProvider from "@/components/providers/PostHogProvider"
 
-// Elegant serif font for headings
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-serif",
 })
 
-// Clean sans-serif for body
 const lato = Lato({
   weight: ["300", "400", "700"],
   subsets: ["latin"],
   variable: "--font-sans",
 })
 
-// Instrument Serif for site title
 const instrumentSerif = Instrument_Serif({
   weight: ["400"],
   subsets: ["latin"],
@@ -39,18 +37,17 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${playfair.variable} ${lato.variable} ${instrumentSerif.variable}`}>
       <body className="font-sans">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          storageKey="color-theme"
-        >
-          {children}
-        </ThemeProvider>
+        <PostHogProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+            storageKey="color-theme"
+          >
+            {children}
+          </ThemeProvider>
+        </PostHogProvider>
       </body>
     </html>
   )
 }
-
-
-import './globals.css'
