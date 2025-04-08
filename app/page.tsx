@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input"
 import { MusicCard } from "@/components/music-card"
 import { AddSongModal } from "@/components/add-song-modal"
 import { useMobile } from "@/hooks/use-mobile"
+import Image from "next/image"
+import { Plus } from "lucide-react"
 
 // Mock song search API - in a real app, this would be an actual API call
 const searchSongs = (query: string) => {
@@ -200,8 +202,29 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedSong, setSelectedSong] = useState<any>(null)
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+  const [showStickySearch, setShowStickySearch] = useState(false)
+  const [showFloatingSearch, setShowFloatingSearch] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
+  const mainSearchRef = useRef<HTMLDivElement>(null)
+  const floatingSearchRef = useRef<HTMLDivElement>(null)
   const isMobile = useMobile()
+  const [showSearchInput, setShowSearchInput] = useState(false)
+
+  // Handle scroll to show/hide floating button
+  useEffect(() => {
+    const handleScroll = () => {
+      if (mainSearchRef.current) {
+        const mainSearchPosition = mainSearchRef.current.getBoundingClientRect().top
+        // Show floating button when the main search is scrolled out of view
+        setShowStickySearch(mainSearchPosition < 0)
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll)
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+    }
+  }, [])
 
   // Handle clicks outside the search dropdown
   useEffect(() => {
@@ -209,13 +232,21 @@ export default function Home() {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setShowDropdown(false)
       }
+
+      if (
+        floatingSearchRef.current &&
+        showFloatingSearch &&
+        !floatingSearchRef.current.contains(event.target as Node)
+      ) {
+        setShowFloatingSearch(false)
+      }
     }
 
     document.addEventListener("mousedown", handleClickOutside)
     return () => {
       document.removeEventListener("mousedown", handleClickOutside)
     }
-  }, [])
+  }, [showFloatingSearch])
 
   // Live search effect
   useEffect(() => {
@@ -247,6 +278,8 @@ export default function Home() {
     setSelectedSong(song)
     setSearchQuery("")
     setShowDropdown(false)
+    setShowSearchInput(false)
+    setShowFloatingSearch(false)
     setIsModalOpen(true)
   }
 
@@ -263,60 +296,118 @@ export default function Home() {
     }, 3000)
   }
 
+  // Shared search input component
+  const SearchInput = ({ isSticky = false, className = "" }) => (
+    <div className={`relative ${className}`} ref={isSticky ? floatingSearchRef : mainSearchRef}>
+      {!showSearchInput && !isSticky ? (
+        <div className="flex justify-center">
+          <Button
+            onClick={() => setShowSearchInput(true)}
+            className="w-48 h-12 rounded-full bg-[#333] text-white hover:bg-[#555] text-base"
+          >
+            Add your song
+          </Button>
+        </div>
+      ) : (
+        <>
+          <Input
+            type="search"
+            placeholder="Search a song to add..."
+            className="border-[#333] pr-10 w-full h-12 text-base rounded-full"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
+            onBlur={() => {
+              // Only hide the search input if there's no query
+              if (!searchQuery && !isSticky) {
+                setTimeout(() => {
+                  setShowSearchInput(false)
+                }, 200)
+              }
+            }}
+            autoFocus
+            aria-label="Search for songs"
+          />
+
+          {/* Search results dropdown (opens upwards) */}
+          {showDropdown && (
+            <div className="absolute bottom-full mb-1 w-full rounded-md border border-gray-200 bg-white shadow-lg">
+              <div className="max-h-60 overflow-auto py-1">
+                {searchResults.map((song) => (
+                  <div
+                    key={song.id}
+                    className="flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-gray-100"
+                    onClick={() => handleSongSelect(song)}
+                  >
+                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-sm bg-gray-100">
+                      <img
+                        src="https://i1.sndcdn.com/artworks-000116795481-6fmihq-t500x500.jpg"
+                        alt={`${song.title} album cover`}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900">{song.title}</div>
+                      <div className="text-sm text-gray-600">{song.artist}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+
   return (
     <div className="min-h-screen bg-[#FFF8E1]">
       {/* Simple, clean header */}
-      <header className="py-4 md:py-6 text-center">
-        <h1 className="font-instrument text-lg font-bold tracking-widest text-[#333] inline-block border-b border-[#333] pb-1">
-          ThisSongMeant
-        </h1>
+      <header className="text-center pt-6 pb-4 flex items-center justify-center h-auto">
+        <div className="inline-block scale-[0.82] transform">
+          <Image
+            src="/images/logo-new.png"
+            alt="ThisSongMeant Logo"
+            width={130}
+            height={130}
+            className="h-auto object-contain"
+            style={{ margin: "-12px" }}
+          />
+        </div>
       </header>
 
       <main className="px-4 md:px-6 pb-4">
-        <h2 className="text-center font-instrument text-3xl md:text-5xl text-[#333] mb-6 md:mb-8 font-bold tracking-tight pt-4 md:pt-8">
+        <h2 className="text-center font-instrument text-3xl md:text-5xl text-[#333] mb-6 md:mb-8 font-bold tracking-tight">
           What's your favorite song mean to you?
         </h2>
 
-        {/* Search input with live dropdown */}
+        {/* Main search input */}
         <div className="max-w-xs mx-auto mb-8 md:mb-10">
-          <div className="relative" ref={searchRef}>
-            <Input
-              type="search"
-              placeholder="Search a song to add..."
-              className="border-[#333] pr-10 w-full h-12 text-base"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
-            />
+          <SearchInput isSticky={false} />
+        </div>
 
-            {/* Search results dropdown */}
-            {showDropdown && (
-              <div className="absolute z-10 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg">
-                <div className="max-h-60 overflow-auto py-1">
-                  {searchResults.map((song) => (
-                    <div
-                      key={song.id}
-                      className="flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-gray-100"
-                      onClick={() => handleSongSelect(song)}
-                    >
-                      <div className="h-10 w-10 shrink-0 overflow-hidden rounded-sm bg-gray-100">
-                        <img
-                          src="https://i1.sndcdn.com/artworks-000116795481-6fmihq-t500x500.jpg"
-                          alt={`${song.title} album cover`}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-900">{song.title}</div>
-                        <div className="text-sm text-gray-600">{song.artist}</div>
-                      </div>
-                    </div>
-                  ))}
+        {/* Floating add button */}
+        {showStickySearch && (
+          <>
+            {!showFloatingSearch ? (
+              <div className="fixed bottom-6 right-6 z-40">
+                <Button
+                  onClick={() => setShowFloatingSearch(true)}
+                  className="h-14 w-14 rounded-full bg-[#333] text-white hover:bg-[#555] shadow-lg flex items-center justify-center"
+                  aria-label="Add your song"
+                >
+                  <Plus className="h-6 w-6" />
+                </Button>
+              </div>
+            ) : (
+              <div className="fixed bottom-6 left-0 right-0 z-40 px-4" ref={floatingSearchRef}>
+                <div className="mx-auto max-w-md bg-white rounded-full shadow-lg p-2">
+                  <SearchInput isSticky={true} />
                 </div>
               </div>
             )}
-          </div>
-        </div>
+          </>
+        )}
 
         {/* Success message */}
         {showSuccessMessage && (
@@ -343,11 +434,11 @@ export default function Home() {
                   onClick={handleLoadMore}
                   disabled={isLoading}
                   variant="outline"
-                  className="rounded-none border-[#333] px-6 md:px-8 py-2 text-[#333] hover:bg-[#333] hover:text-white h-12 text-base"
+                  className="rounded-full border-[#333] px-4 py-1 text-[#333] hover:bg-[#333] hover:text-white h-9 text-sm"
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#333] border-t-transparent"></div>
+                      <div className="h-3 w-3 animate-spin rounded-full border-2 border-[#333] border-t-transparent"></div>
                       <span>Loading...</span>
                     </div>
                   ) : (
@@ -394,4 +485,3 @@ export default function Home() {
     </div>
   )
 }
-
