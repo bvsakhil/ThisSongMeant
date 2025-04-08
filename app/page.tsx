@@ -317,7 +317,7 @@ export default function Home() {
           What's your favorite song mean to you?
         </h1>
 
-        {/* Main search input */}
+        {/* Main search field */}
         <div className="max-w-xs mx-auto mb-8 md:mb-10">
           <SearchInput isSticky={false} />
         </div>
@@ -359,15 +359,8 @@ export default function Home() {
             ) : (
               <>
                 <div className="columns-1 gap-4 sm:gap-5 sm:columns-2 md:columns-3 lg:columns-4">
-                  {stories.map((story, index) => (
-                    <div 
-                      key={story.id} 
-                      className="mb-4 sm:mb-5 break-inside-avoid animate-fade-in-up"
-                      style={{
-                        animationDelay: `${index * 0.1}s`,
-                        animationFillMode: 'both'
-                      }}
-                    >
+                  {stories.map((story) => (
+                    <div key={story.id} className="mb-4 sm:mb-5 break-inside-avoid">
                       <MusicCard song={story} />
                     </div>
                   ))}
