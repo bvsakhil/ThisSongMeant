@@ -156,6 +156,7 @@ export function AddSongModal({
                   className="min-h-[120px] resize-none text-base p-3"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
+                  required
                 />
               </div>
 
@@ -166,6 +167,7 @@ export function AddSongModal({
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="h-12 text-base p-3"
+                  required
                 />
                 <p className="mt-1 text-xs text-gray-500">This will be displayed with your story on the wall.</p>
               </div>
