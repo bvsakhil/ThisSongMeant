@@ -282,11 +282,11 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#FFF8E1]">
       {/* Simple, clean header */}
-      <header className="pt-6 pb-4 flex items-center justify-between h-auto px-4">
-        <div className="text-lg font-bold font-instrument text-[#333]">
-          ThisSongMeant
+      <header className="pt-6 pb-4 flex items-center justify-center h-auto px-4">
+        <div className="text-lg font-extrabold font-instrument text-[#333] pt-4">
+          thissongmeant.me
         </div>
-        <button
+        {/* <button
           onClick={() => {
             if (navigator.share) {
               navigator.share({
@@ -301,7 +301,7 @@ export default function Home() {
           className="border border-[#333] text-[#333] px-4 py-2 rounded-full font-sans"
         >
           Share
-        </button>
+        </button> */}
       </header>
 
       <main className="pt-8 px-4 md:px-6 pb-4">
