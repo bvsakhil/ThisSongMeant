@@ -43,6 +43,7 @@ export default function Home() {
   const mainSearchRef = useRef<HTMLDivElement>(null)
   const floatingSearchRef = useRef<HTMLDivElement>(null)
   const [showSearchInput, setShowSearchInput] = useState(false)
+  const observerTarget = useRef<HTMLDivElement>(null)
 
   // Handle scroll to show/hide floating button
   useEffect(() => {
@@ -109,11 +110,29 @@ export default function Home() {
     fetchSongs(1)
   }, [])
 
-  const handleLoadMore = () => {
-    const nextPage = currentPage + 1
-    setCurrentPage(nextPage)
-    fetchSongs(nextPage, true)
-  }
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+          const nextPage = currentPage + 1
+          setCurrentPage(nextPage)
+          fetchSongs(nextPage, true)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current)
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current)
+      }
+    }
+  }, [currentPage, hasMore, isLoadingMore])
 
   const handleSongSelect = (song: any) => {
     setSelectedSong(song)
@@ -339,30 +358,14 @@ export default function Home() {
                   ))}
                 </div>
 
-                {/* Load more section */}
-                {stories.length > 0 && (
-                  <div className="mt-8 md:mt-12 text-center">
-                    {hasMore ? (
-                      <Button
-                        onClick={handleLoadMore}
-                        disabled={isLoadingMore}
-                        variant="outline"
-                        className="rounded-full border-[#333] px-4 py-1 text-[#333] hover:bg-[#333] hover:text-white h-9 text-sm font-sans"
-                      >
-                        {isLoadingMore ? (
-                          <div className="flex items-center gap-2">
-                            <div className="h-3 w-3 animate-spin rounded-full border-2 border-[#333] border-t-transparent"></div>
-                            <span>Loading...</span>
-                          </div>
-                        ) : (
-                          "Load More Stories"
-                        )}
-                      </Button>
-                    ) : (
-                      <p className="text-[#666] font-sans">You've seen all the stories.</p>
-                    )}
-                  </div>
-                )}
+                {/* Infinite scroll target */}
+                <div ref={observerTarget} className="h-10">
+                  {isLoadingMore && (
+                    <div className="flex justify-center">
+                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-transparent"></div>
+                    </div>
+                  )}
+                </div>
 
                 {!isLoadingStories && stories.length === 0 && (
                   <div className="text-center py-8">
