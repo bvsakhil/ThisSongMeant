@@ -1,5 +1,5 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Playfair_Display, Lato, Instrument_Serif } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -22,10 +22,15 @@ const instrumentSerif = Instrument_Serif({
   variable: "--font-instrument",
 })
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+}
+
 export const metadata: Metadata = {
   title: "ThisSongMeant - Share Your Musical Memories",
   description: "A place to share what songs mean to you and discover others' musical memories",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
   generator: 'v0.dev'
 }
 

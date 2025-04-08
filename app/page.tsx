@@ -277,7 +277,7 @@ export default function Home() {
       </header>
 
       <main className="px-4 md:px-6 pb-4">
-        <h1 className="text-center font-instrument text-3xl md:text-5xl text-[#333] mb-6 md:mb-8 font-bold tracking-tight">
+        <h1 className="text-center font-instrument text-4xl md:text-5xl text-[#333] mb-6 md:mb-8 font-bold tracking-tight">
           What's your favorite song mean to you?
         </h1>
 
