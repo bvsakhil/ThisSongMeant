@@ -263,20 +263,29 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#FFF8E1]">
       {/* Simple, clean header */}
-      <header className="text-center pt-6 pb-4 flex items-center justify-center h-auto">
-        <div className="inline-block scale-[0.82] transform">
-          <Image
-            src="/images/logo-new.png"
-            alt="ThisSongMeant Logo"
-            width={130}
-            height={130}
-            className="h-auto object-contain"
-            style={{ margin: "-12px" }}
-          />
+      <header className="pt-6 pb-4 flex items-center justify-between h-auto px-4">
+        <div className="text-lg font-bold font-instrument text-[#333]">
+          ThisSongMeant
         </div>
+        <button
+          onClick={() => {
+            if (navigator.share) {
+              navigator.share({
+                title: 'ThisSongMeant',
+                text: "Check out ThisSongMeant - What's your favorite song mean to you?",
+                url: window.location.href,
+              })
+            } else {
+              alert('Sharing is not supported in this browser.')
+            }
+          }}
+          className="border border-[#333] text-[#333] px-4 py-2 rounded-full font-sans"
+        >
+          Share
+        </button>
       </header>
 
-      <main className="px-4 md:px-6 pb-4">
+      <main className="pt-8 px-4 md:px-6 pb-4">
         <h1 className="text-center font-instrument text-4xl md:text-5xl text-[#333] mb-6 md:mb-8 font-bold tracking-tight">
           What's your favorite song mean to you?
         </h1>
@@ -293,7 +302,7 @@ export default function Home() {
               <div className="fixed bottom-6 right-6 z-40">
                 <Button
                   onClick={() => setShowFloatingSearch(true)}
-                  className="h-14 w-14 rounded-full bg-[#333] text-white hover:bg-[#555] shadow-lg flex items-center justify-center"
+                  className="h-14 w-14 rounded-full bg-[#333] text-white hover:bg-[#555] shadow-lg flex items-center justify-center font-sans"
                   aria-label="Add your song"
                 >
                   <Plus className="h-6 w-6" />
@@ -311,7 +320,7 @@ export default function Home() {
 
         {/* Success message */}
         {showSuccessMessage && (
-          <div className="fixed top-4 right-4 z-50 rounded-md bg-green-100 p-4 shadow-md">
+          <div className="fixed top-4 right-4 z-50 rounded-md bg-green-100 p-4 shadow-md font-sans">
             <p className="text-green-800">Your story has been added to the wall!</p>
           </div>
         )}
@@ -338,7 +347,7 @@ export default function Home() {
                         onClick={handleLoadMore}
                         disabled={isLoadingMore}
                         variant="outline"
-                        className="rounded-full border-[#333] px-4 py-1 text-[#333] hover:bg-[#333] hover:text-white h-9 text-sm"
+                        className="rounded-full border-[#333] px-4 py-1 text-[#333] hover:bg-[#333] hover:text-white h-9 text-sm font-sans"
                       >
                         {isLoadingMore ? (
                           <div className="flex items-center gap-2">
@@ -350,14 +359,14 @@ export default function Home() {
                         )}
                       </Button>
                     ) : (
-                      <p className="text-[#666]">You've seen all the stories.</p>
+                      <p className="text-[#666] font-sans">You've seen all the stories.</p>
                     )}
                   </div>
                 )}
 
                 {!isLoadingStories && stories.length === 0 && (
                   <div className="text-center py-8">
-                    <p className="text-gray-500">No stories yet. Be the first to share!</p>
+                    <p className="text-gray-500 font-sans">No stories yet. Be the first to share!</p>
                   </div>
                 )}
               </>
@@ -380,7 +389,7 @@ export default function Home() {
       />
 
       {/* Simple footer */}
-      <footer className="px-4 py-4 md:py-6 text-center text-sm text-[#666]">
+      <footer className="px-4 py-4 md:py-6 text-center text-sm text-[#666] font-sans">
         <div className="container mx-auto">
           <p>
             A CultureWare Product.

@@ -1,6 +1,6 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { Playfair_Display, Lato, Instrument_Serif } from "next/font/google"
+import { Playfair_Display, Instrument_Sans, Instrument_Serif } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import PostHogProvider from "@/components/providers/PostHogProvider"
@@ -10,8 +10,7 @@ const playfair = Playfair_Display({
   variable: "--font-serif",
 })
 
-const lato = Lato({
-  weight: ["300", "400", "700"],
+const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
 })
@@ -40,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${playfair.variable} ${lato.variable} ${instrumentSerif.variable}`}>
+    <html lang="en" className={`${playfair.variable} ${instrumentSans.variable} ${instrumentSerif.variable}`}>
       <body className="font-sans">
         <PostHogProvider>
           <ThemeProvider

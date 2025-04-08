@@ -170,11 +170,7 @@ export default function CreatePage({ params }: { params: { songId: string } }) {
           </div>
         </div>
       </main>
-      <footer className="border-t border-amber-200 bg-amber-100 px-4 py-6 text-center text-sm text-red-700">
-        <div className="container mx-auto">
-          <p>© {new Date().getFullYear()} MusicWall. Share your musical memories.</p>
-        </div>
-      </footer>
+
     </div>
   )
 }
