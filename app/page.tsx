@@ -158,8 +158,10 @@ export default function Home() {
 
       const savedSong = response.data
 
-      // Add the new story to the beginning of the stories array
-      setStories([savedSong, ...stories])
+      // Immediately add the new story to the beginning of the stories array
+      setStories(prevStories => [savedSong, ...prevStories])
+      
+      // Reset modal and selected song
       setIsModalOpen(false)
       setSelectedSong(null)
 
@@ -168,6 +170,12 @@ export default function Home() {
       setTimeout(() => {
         setShowSuccessMessage(false)
       }, 3000)
+
+      // Scroll to top to show the new card
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      })
     } catch (error) {
       console.error('Error saving song:', error)
       // You might want to show an error message to the user here
@@ -351,8 +359,15 @@ export default function Home() {
             ) : (
               <>
                 <div className="columns-1 gap-4 sm:gap-5 sm:columns-2 md:columns-3 lg:columns-4">
-                  {stories.map((story) => (
-                    <div key={story.id} className="mb-4 sm:mb-5 break-inside-avoid">
+                  {stories.map((story, index) => (
+                    <div 
+                      key={story.id} 
+                      className="mb-4 sm:mb-5 break-inside-avoid animate-fade-in-up"
+                      style={{
+                        animationDelay: `${index * 0.1}s`,
+                        animationFillMode: 'both'
+                      }}
+                    >
                       <MusicCard song={story} />
                     </div>
                   ))}
