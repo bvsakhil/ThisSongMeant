@@ -27,9 +27,9 @@ interface Track {
 
 export default function Home() {
   const [stories, setStories] = useState<any[]>([])
-  const [isLoadingStories, setIsLoadingStories] = useState(true)
+  const [isLoadingStories, setIsLoadingStories] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
+  const [hasMore, setHasMore] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<any[]>([])
@@ -103,8 +103,9 @@ export default function Home() {
     }
   }
 
-  // Initial load
+  // Move the fetch inside useEffect
   useEffect(() => {
+    setIsLoadingStories(true)
     fetchSongs(1)
   }, [])
 

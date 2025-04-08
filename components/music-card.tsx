@@ -23,9 +23,15 @@ interface MusicCardProps {
 }
 
 export function MusicCard({ song }: MusicCardProps) {
-  const [likes, setLikes] = useState(song.likes)
-  const [hasLiked, setHasLiked] = useState(song.user_likes)
+  // Use useEffect to handle client-side initialization
+  const [likes, setLikes] = useState(0)
+  const [hasLiked, setHasLiked] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
+
+  useEffect(() => {
+    setLikes(song.likes)
+    setHasLiked(song.user_likes)
+  }, [song.likes, song.user_likes])
 
   const handleLike = async () => {
     if (isUpdating) return

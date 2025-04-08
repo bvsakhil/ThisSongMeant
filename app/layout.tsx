@@ -28,18 +28,23 @@ export const metadata: Metadata = {
   title: "ThisSongMeant - Share Your Musical Memories",
   description: "A place to share what songs mean to you and discover others' musical memories",
   viewport: "width=device-width, initial-scale=1, maximum-scale=5",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body className={`${playfair.variable} ${lato.variable} ${instrumentSerif.variable} font-sans`}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+    <html lang="en" className={`${playfair.variable} ${lato.variable} ${instrumentSerif.variable}`}>
+      <body className="font-sans">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+          storageKey="color-theme"
+        >
           {children}
         </ThemeProvider>
       </body>
