@@ -11,11 +11,16 @@ import { useMobile } from "@/hooks/use-mobile"
 
 interface Song {
   id: string
-  title: string
-  artist: string
-  album: string
-  year: string
-  albumCover: string
+  name: string
+  artists: { name: string }[]
+  album: {
+    name: string
+    images: { url: string }[]
+    release_date: string
+  }
+  external_urls: {
+    spotify: string
+  }
 }
 
 interface AddSongModalProps {
@@ -38,7 +43,6 @@ export function AddSongModal({
   const [note, setNote] = useState("")
   const [username, setUsername] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const isMobile = useMobile()
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -57,69 +61,31 @@ export function AddSongModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (!selectedSong) return
-
-    setIsSubmitting(true)
-
-    // Create a new story object
+    
+    // Transform the Spotify track data into your story format
     const newStory = {
-      id: Date.now().toString(), // Generate a unique ID
-      title: selectedSong.title,
-      artist: selectedSong.artist,
-      albumCover: selectedSong.albumCover,
-      note:
-        note ||
-        "This song means so much to me. The melody and lyrics speak to my soul in a way that's hard to describe.",
-      username: username || "Anonymous",
+      id: selectedSong?.id,
+      title: selectedSong?.name,
+      artist: selectedSong?.artists[0]?.name,
+      album: selectedSong?.album?.name,
+      albumCover: selectedSong?.album?.images[0]?.url || "/placeholder.svg",
+      note,
+      username,
       likes: 0,
-      color: ["pink", "blue", "green", "yellow", "orange", "teal", "purple", "indigo", "red"][
-        Math.floor(Math.random() * 9)
-      ],
+      color: getRandomColor(),
+      spotifyUrl: selectedSong?.external_urls?.spotify
     }
 
-    // Simulate API delay
-    setTimeout(() => {
-      onAddStory(newStory)
-      setNote("")
-      setUsername("")
-      setIsSubmitting(false)
-    }, 500)
+    onAddStory(newStory)
+    setNote("")
+    setUsername("")
   }
 
-  // For demo purposes, ensure we always have a selected song option
-  const dummySong = {
-    id: "dummy1",
-    title: "Enter Sandman",
-    artist: "Metallica",
-    album: "Metallica (Black Album)",
-    year: "1991",
-    albumCover: "/placeholder.svg?height=200&width=200&text=Metallica",
+  // Helper function to generate random colors for stories
+  function getRandomColor() {
+    const colors = ["pink", "blue", "green", "yellow", "orange", "purple", "indigo", "red", "teal"]
+    return colors[Math.floor(Math.random() * colors.length)]
   }
-
-  // If no search results, add dummy results
-  const displayResults =
-    searchResults.length > 0
-      ? searchResults
-      : [
-          dummySong,
-          {
-            id: "dummy2",
-            title: "Thriller",
-            artist: "Michael Jackson",
-            album: "Thriller",
-            year: "1982",
-            albumCover: "/placeholder.svg?height=200&width=200&text=MJ",
-          },
-          {
-            id: "dummy3",
-            title: "Wonderwall",
-            artist: "Oasis",
-            album: "(What's the Story) Morning Glory?",
-            year: "1995",
-            albumCover: "/placeholder.svg?height=200&width=200&text=Oasis",
-          },
-        ]
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
@@ -138,7 +104,7 @@ export function AddSongModal({
             <h3 className="mb-4 text-xl font-bold text-gray-900 pr-8">Select a Song</h3>
 
             <div className="max-h-[60vh] overflow-y-auto">
-              {displayResults.map((song) => (
+              {searchResults.map((song) => (
                 <div
                   key={song.id}
                   className="mb-2 flex cursor-pointer items-center gap-3 rounded-md p-3 hover:bg-gray-100"
@@ -146,15 +112,15 @@ export function AddSongModal({
                 >
                   <div className="h-12 w-12 shrink-0 overflow-hidden rounded-sm bg-gray-100">
                     <img
-                      src={song.albumCover || "/placeholder.svg"}
-                      alt={`${song.title} album cover`}
+                      src={song.album.images[0]?.url || "/placeholder.svg"}
+                      alt={`${song.name} album cover`}
                       className="h-full w-full object-cover"
                     />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-900">{song.title}</h4>
+                    <h4 className="font-medium text-gray-900">{song.name}</h4>
                     <p className="text-sm text-gray-600">
-                      {song.artist} • {song.album} ({song.year})
+                      {song.artists[0].name} • {song.album.name}
                     </p>
                   </div>
                 </div>
@@ -162,20 +128,22 @@ export function AddSongModal({
             </div>
           </div>
         ) : (
-          // Step 2: Add note and username for the selected song
+          // Step 2: Add note for selected song
           <div>
-            <div className="mb-4 flex items-center gap-3 pr-8">
+            <h3 className="mb-4 text-xl font-bold text-gray-900 pr-8">Add Your Story</h3>
+
+            <div className="mb-4 flex items-center gap-3">
               <div className="h-16 w-16 shrink-0 overflow-hidden rounded-sm bg-gray-100">
                 <img
-                  src={selectedSong.albumCover || "/placeholder.svg"}
-                  alt={`${selectedSong.title} album cover`}
+                  src={selectedSong.album.images[0]?.url || "/placeholder.svg"}
+                  alt={`${selectedSong.name} album cover`}
                   className="h-full w-full object-cover"
                 />
               </div>
               <div>
-                <h4 className="font-medium text-gray-900">{selectedSong.title}</h4>
+                <h4 className="font-medium text-gray-900">{selectedSong.name}</h4>
                 <p className="text-sm text-gray-600">
-                  {selectedSong.artist} • {selectedSong.album} ({selectedSong.year})
+                  {selectedSong.artists[0].name} • {selectedSong.album.name}
                 </p>
               </div>
             </div>

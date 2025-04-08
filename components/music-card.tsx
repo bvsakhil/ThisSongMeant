@@ -1,19 +1,21 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { getUserId } from "@/lib/user"
 
 interface Song {
   id: string
   title: string
   artist: string
-  albumCover: string
+  album_cover: string
   note: string
   username: string
   likes: number
   color?: string
-  spotifyUrl?: string
+  spotify_url?: string
+  user_likes: boolean
 }
 
 interface MusicCardProps {
@@ -22,15 +24,47 @@ interface MusicCardProps {
 
 export function MusicCard({ song }: MusicCardProps) {
   const [likes, setLikes] = useState(song.likes)
-  const [hasLiked, setHasLiked] = useState(false)
+  const [hasLiked, setHasLiked] = useState(song.user_likes)
+  const [isUpdating, setIsUpdating] = useState(false)
 
-  const handleLike = () => {
-    if (hasLiked) {
-      setLikes(likes - 1)
-    } else {
-      setLikes(likes + 1)
+  const handleLike = async () => {
+    if (isUpdating) return
+
+    try {
+      setIsUpdating(true)
+      const userId = getUserId()
+      
+      // Optimistic update
+      setHasLiked(!hasLiked)
+      setLikes(prev => hasLiked ? prev - 1 : prev + 1)
+
+      const response = await fetch(`/api/songs/${song.id}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update like')
+      }
+
+      const { liked } = await response.json()
+      
+      // Update state if the server response differs from our optimistic update
+      if (liked !== !hasLiked) {
+        setHasLiked(liked)
+        setLikes(prev => liked ? prev + 1 : prev - 1)
+      }
+    } catch (error) {
+      console.error('Error updating like:', error)
+      // Revert the optimistic update if there was an error
+      setHasLiked(hasLiked)
+      setLikes(prev => hasLiked ? prev + 1 : prev - 1)
+    } finally {
+      setIsUpdating(false)
     }
-    setHasLiked(!hasLiked)
   }
 
   // Generate a slight random rotation for sticker effect
@@ -43,8 +77,8 @@ export function MusicCard({ song }: MusicCardProps) {
   // Get a realistic album cover image based on artist name
   const getAlbumCover = () => {
     // If there's already a valid album cover URL, use it
-    if (song.albumCover && !song.albumCover.includes("placeholder.svg")) {
-      return song.albumCover
+    if (song.album_cover && !song.album_cover.includes("placeholder.svg")) {
+      return song.album_cover
     }
 
     // Otherwise, use a more realistic placeholder based on artist
@@ -65,7 +99,7 @@ export function MusicCard({ song }: MusicCardProps) {
         <div className="mb-3 md:mb-4 flex items-center gap-3">
           <div className="h-12 w-12 shrink-0 overflow-hidden rounded-sm bg-gray-100 relative">
             <img
-              src="https://i1.sndcdn.com/artworks-000116795481-6fmihq-t500x500.jpg"
+              src={song.album_cover || "https://i1.sndcdn.com/artworks-000116795481-6fmihq-t500x500.jpg"}
               alt={`${song.title} by ${song.artist}`}
               className="h-full w-full object-cover"
               loading="lazy"
@@ -77,7 +111,7 @@ export function MusicCard({ song }: MusicCardProps) {
           </div>
           <a
             href={
-              song.spotifyUrl || `https://open.spotify.com/search/${encodeURIComponent(song.title + " " + song.artist)}`
+              song.spotify_url || `https://open.spotify.com/search/${encodeURIComponent(song.title + " " + song.artist)}`
             }
             target="_blank"
             rel="noopener noreferrer"
@@ -99,17 +133,7 @@ export function MusicCard({ song }: MusicCardProps) {
 
         {/* Note */}
         <p className="mb-3 text-sm leading-relaxed text-gray-800 font-satoshi">
-          "
-          {song.note.length > 50
-            ? song.note
-            : song.note +
-              " " +
-              (song.id === "1"
-                ? "I remember the first time I heard this song - I was driving down the coast with the windows down, feeling completely free. Every time the chorus hits, I'm transported back to that moment. The lyrics speak to something deep inside me, like the songwriter somehow knew exactly what I was going through. Music has this incredible power to capture emotions that words alone never could. This song has been with me through breakups, new beginnings, and everything in between."
-                : song.id === "2"
-                  ? "There's something about the melody that just stops me in my tracks every time. I've listened to this song during some of the most pivotal moments of my life. The way the artist captures that feeling of longing and hope simultaneously is pure genius. I've shared this song with everyone I care about because it expresses things I struggle to say myself. It's like a musical time capsule that brings back memories with perfect clarity."
-                  : "The production on this track is absolutely flawless. I can pick out new details even after hundreds of listens. The way the bridge builds into that final chorus gives me goosebumps without fail. I've cried to this song, danced to this song, and found comfort in it during my darkest times. It's more than just music - it's become part of the soundtrack to my life. Some songs are just entertainment, but this one feels like it was written specifically for me.")}
-          "
+          {song.note}
         </p>
 
         {/* Username and likes */}
@@ -119,13 +143,22 @@ export function MusicCard({ song }: MusicCardProps) {
             <Button
               variant="ghost"
               size="icon"
-              className={`h-8 w-8 md:h-7 md:w-7 ${hasLiked ? "text-red-500" : "text-gray-400 hover:text-red-500"}`}
+              className={`h-8 w-8 md:h-7 md:w-7 ${
+                hasLiked ? "text-red-500" : "text-gray-400 hover:text-red-500"
+              }`}
               onClick={handleLike}
+              disabled={isUpdating}
               aria-label={hasLiked ? "Unlike" : "Like"}
             >
-              <Heart className={`h-4 w-4 md:h-3.5 md:w-3.5 ${hasLiked ? "fill-current" : ""}`} />
+              <Heart 
+                className={`h-4 w-4 md:h-3.5 md:w-3.5 transition-all duration-300 ${
+                  hasLiked ? "fill-current scale-110" : "scale-100"
+                }`} 
+              />
             </Button>
-            <span className="text-xs font-medium text-gray-700">{likes}</span>
+            <span className="text-xs font-medium text-gray-700">
+              {likes}
+            </span>
           </div>
         </div>
       </div>
