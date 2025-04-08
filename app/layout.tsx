@@ -30,7 +30,25 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "ThisSongMeant - Share Your Musical Memories",
   description: "A place to share what songs mean to you and discover others' musical memories",
-  generator: 'v0.dev'
+  generator: 'v0.dev',
+  openGraph: {
+    title: "ThisSongMeant - Share Your Musical Memories",
+    description: "A place to share what songs mean to you and discover others' musical memories",
+    images: [
+      {
+        url: '/images/song_preview.png',
+        width: 1200,
+        height: 630,
+        alt: 'ThisSongMeant - Share Your Musical Memories',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "ThisSongMeant - Share Your Musical Memories",
+    description: "A place to share what songs mean to you and discover others' musical memories",
+    images: ['/images/song_preview.png'],
+  },
 }
 
 export default function RootLayout({
