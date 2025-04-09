@@ -27,6 +27,7 @@ interface Track {
 
 export default function Home() {
   const [stories, setStories] = useState<any[]>([])
+  const [totalSongs, setTotalSongs] = useState(0)
   const [isLoadingStories, setIsLoadingStories] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(false)
@@ -96,6 +97,7 @@ export default function Home() {
       
       setStories(prev => append ? [...prev, ...data.songs] : data.songs)
       setHasMore(data.hasMore)
+      setTotalSongs(data.total || data.songs.length)
     } catch (error) {
       console.error('Error fetching songs:', error)
     } finally {
@@ -147,7 +149,6 @@ export default function Home() {
     try {
       const userId = getUserId()
       
-      // Save to Supabase
       const response = await axios.post('/api/songs', {
         ...newStory,
         userId
@@ -158,27 +159,23 @@ export default function Home() {
 
       const savedSong = response.data
 
-      // Immediately add the new story to the beginning of the stories array
       setStories(prevStories => [savedSong, ...prevStories])
+      setTotalSongs(prev => prev + 1)
       
-      // Reset modal and selected song
       setIsModalOpen(false)
       setSelectedSong(null)
 
-      // Show success message
       setShowSuccessMessage(true)
       setTimeout(() => {
         setShowSuccessMessage(false)
       }, 3000)
 
-      // Scroll to top to show the new card
       window.scrollTo({
         top: 0,
         behavior: 'smooth'
       })
     } catch (error) {
       console.error('Error saving song:', error)
-      // You might want to show an error message to the user here
     }
   }
 
@@ -313,9 +310,13 @@ export default function Home() {
       </header>
 
       <main className="pt-8 px-4 md:px-6 pb-4">
-        <h1 className="text-center font-instrument text-4xl md:text-5xl text-[#333] mb-6 md:mb-8 font-bold tracking-tight">
+        <h1 className="text-center font-instrument text-4xl md:text-5xl text-[#333] mb-2 md:mb-3 font-bold tracking-tight">
           What's your favorite song mean to you?
         </h1>
+        <p className="text-center text-[#666] font-sans mb-6 md:mb-8">
+          {/* {stories.length} {stories.length === 1 ? 'story' : 'stories'} shared */}
+          {totalSongs} {totalSongs === 1 ? 'story' : 'songs'} meant something
+        </p>
 
         {/* Main search field */}
         <div className="max-w-xs mx-auto mb-8 md:mb-10">
