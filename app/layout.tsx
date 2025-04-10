@@ -28,25 +28,24 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "ThisSongMeant - Share Your Musical Memories",
-  description: "A place to share what songs mean to you and discover others' musical memories",
-  generator: 'v0.dev',
+  title: "A Music Scrapbook",
+  description: "Showcase collection of songs that mean something to you",
   openGraph: {
-    title: "ThisSongMeant - Share Your Musical Memories",
-    description: "A place to share what songs mean to you and discover others' musical memories",
+    title: "A Music Scrapbook",
+    description: "Showcase collection of songs that mean something to you",
     images: [
       {
         url: '/images/song_preview.png',
         width: 1200,
         height: 630,
-        alt: 'ThisSongMeant - Share Your Musical Memories',
+        alt: 'A Music Scrapbook',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: "ThisSongMeant - Share Your Musical Memories",
-    description: "A place to share what songs mean to you and discover others' musical memories",
+    title: "A Music Scrapbook",
+    description: "Showcase collection of songs that mean something to you",
     images: ['/images/song_preview.png'],
   },
 }
