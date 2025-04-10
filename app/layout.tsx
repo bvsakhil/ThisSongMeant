@@ -66,7 +66,10 @@ export default function RootLayout({
             enableSystem={false}
             storageKey="color-theme"
           >
-            {children}
+
+              {children}
+
+            
           </ThemeProvider>
         </PostHogProvider>
       </body>

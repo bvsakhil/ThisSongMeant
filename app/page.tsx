@@ -10,6 +10,14 @@ import { Plus } from "lucide-react"
 import axios from "axios"
 import { getUserId } from "@/lib/user"
 import { LoadingSkeleton } from "@/components/loading-skeleton"
+import { SiteBanner } from "@/components/site-banner"
+import { signInWithGoogle } from "@/lib/auth"
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { User } from '@supabase/supabase-js'
+import { ProfileDropdown } from '@/components/ProfileDropdown'
+import { UsernameClaimModal } from '@/components/username-claim-modal'
+import { useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 interface Track {
   id: string
@@ -45,6 +53,11 @@ export default function Home() {
   const floatingSearchRef = useRef<HTMLDivElement>(null)
   const [showSearchInput, setShowSearchInput] = useState(false)
   const observerTarget = useRef<HTMLDivElement>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const supabase = createClientComponentClient()
+  const [showUsernameModal, setShowUsernameModal] = useState(false)
+  const searchParams = useSearchParams()
+  const router = useRouter()
 
   // Handle scroll to show/hide floating button
   useEffect(() => {
@@ -83,6 +96,42 @@ export default function Home() {
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [showFloatingSearch])
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+    }
+    getUser()
+
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  // Check if user needs to claim username
+  useEffect(() => {
+    const checkUsername = async () => {
+      if (!user) return
+
+      const { data: userData } = await supabase
+        .from('users')
+        .select('username')
+        .eq('id', user.id)
+        .single()
+
+      if (!userData?.username || searchParams.get('claim_username') === 'true') {
+        setShowUsernameModal(true)
+      }
+    }
+
+    checkUsername()
+  }, [user])
 
   const fetchSongs = async (page: number, append = false) => {
     try {
@@ -151,7 +200,8 @@ export default function Home() {
       
       const response = await axios.post('/api/songs', {
         ...newStory,
-        userId
+        userId,
+        userEmail: user?.email
       })
       if (response.status !== 200) {
         throw new Error('Failed to save song')
@@ -284,32 +334,30 @@ export default function Home() {
     )
   }
 
+  const handleBannerClick = async () => {
+    await signInWithGoogle()
+  }
+
+  const handleUsernameClaimed = () => {
+    setShowUsernameModal(false)
+    router.refresh()
+  }
+
   return (
     <div className="min-h-screen bg-[#FFF8E1]">
-      {/* Simple, clean header */}
-      <header className="pt-6 pb-4 flex items-center justify-center h-auto px-4">
-        <div className="text-lg font-extrabold font-instrument text-[#333] pt-4">
-          thissongmeant.me
+      {/* Banner at the very top - only show if not logged in */}
+      {!user && (
+        <div onClick={handleBannerClick} style={{ cursor: 'pointer' }}>
+          <SiteBanner message="👉 Save songs to your profile. Build your music scrapbook. 👈" />
         </div>
-        {/* <button
-          onClick={() => {
-            if (navigator.share) {
-              navigator.share({
-                title: 'ThisSongMeant',
-                text: "Check out ThisSongMeant - What's your favorite song mean to you?",
-                url: window.location.href,
-              })
-            } else {
-              alert('Sharing is not supported in this browser.')
-            }
-          }}
-          className="border border-[#333] text-[#333] px-4 py-2 rounded-full font-sans"
-        >
-          Share
-        </button> */}
+      )}
+
+      {/* Header with profile dropdown if logged in */}
+      <header className="fixed top-4 md:top-6 right-0 left-0 z-50 flex items-center justify-end px-6 md:px-8 bg-transparent">
+        {user && <ProfileDropdown user={user} />}
       </header>
 
-      <main className="pt-8 px-4 md:px-6 pb-4">
+      <main className="pt-20 md:pt-16 px-10 pb-4">
         <h1 className="text-center font-instrument text-4xl md:text-5xl text-[#333] mb-2 md:mb-3 font-bold tracking-tight">
           What's your favorite song mean to you?
         </h1>
@@ -399,6 +447,15 @@ export default function Home() {
         onSongSelect={() => {}}
         onAddStory={handleAddStory}
       />
+
+      {/* Username Claim Modal */}
+      {user && (
+        <UsernameClaimModal
+          isOpen={showUsernameModal}
+          onComplete={handleUsernameClaimed}
+          user={user}
+        />
+      )}
 
       {/* Simple footer */}
       <footer className="px-4 py-4 md:py-6 text-center text-sm text-[#666] font-sans">

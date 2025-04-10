@@ -20,7 +20,8 @@ export async function POST(request: Request) {
       username,
       color,
       spotifyUrl: spotify_url,
-      userId: user_id 
+      userId: user_id,
+      userEmail: user_email
     } = body
 
     // Insert the song
@@ -37,7 +38,8 @@ export async function POST(request: Request) {
           username,
           color,
           spotify_url,
-          user_id
+          user_id,
+          user_email
         }
       ])
       .select()
