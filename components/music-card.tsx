@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getUserId } from "@/lib/user"
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 interface Song {
   id: string
@@ -16,6 +17,7 @@ interface Song {
   color?: string
   spotify_url?: string
   user_likes: boolean
+  user_id?: string
 }
 
 interface MusicCardProps {
@@ -23,10 +25,36 @@ interface MusicCardProps {
 }
 
 export function MusicCard({ song }: MusicCardProps) {
-  // Use useEffect to handle client-side initialization
   const [likes, setLikes] = useState(0)
   const [hasLiked, setHasLiked] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [displayUsername, setDisplayUsername] = useState(song.username)
+  const supabase = createClientComponentClient()
+
+  // Get current user and their username
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setCurrentUser(user)
+        
+        // If this song was posted by the current user, get their current username
+        if (user.id === song.user_id) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('username')
+            .eq('id', user.id)
+            .single()
+          
+          if (userData?.username) {
+            setDisplayUsername(userData.username)
+          }
+        }
+      }
+    }
+    getUser()
+  }, [song.user_id])
 
   useEffect(() => {
     setLikes(song.likes)
@@ -144,7 +172,10 @@ export function MusicCard({ song }: MusicCardProps) {
 
         {/* Username and likes */}
         <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-500">- {song.username}</span>
+          <span className="text-xs text-gray-500">
+            - {displayUsername}
+            {currentUser?.id === song.user_id && " (you)"}
+          </span>
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
