@@ -91,27 +91,15 @@ export default function ProfileContent({ username }: ProfileContentProps) {
         
         if (userData) {
           setProfileData(userData)
-          // Fetch stories with likes information
+          // Fetch stories immediately after getting user data
           const { data: stories, error: storiesError } = await supabase
             .from('songs')
-            .select(`
-              *,
-              likes:song_likes(count),
-              user_likes:song_likes(user_id)
-            `)
+            .select('*')
             .eq('user_email', userData.email)
             .order('created_at', { ascending: false })
 
           if (storiesError) throw storiesError
-
-          // Transform the data to match the expected format
-          const transformedStories = stories?.map(story => ({
-            ...story,
-            likes: story.likes?.[0]?.count || 0,
-            user_likes: story.user_likes?.some((like: any) => like.user_id === user?.id) || false
-          })) || []
-
-          setStories(transformedStories)
+          setStories(stories || [])
         }
       } catch (error) {
         console.error('Error fetching data:', error)

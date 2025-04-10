@@ -97,13 +97,12 @@ export function AddSongModal({
       likes: 0,
       color: getRandomColor(),
       spotifyUrl: selectedSong?.external_urls?.spotify,
-      user_id: user?.id,
+      userId: user?.id,
       userEmail: user?.email
     }
 
     onAddStory(newStory)
     setNote("")
-    onClose()
   }
 
   // Helper function to generate random colors for stories

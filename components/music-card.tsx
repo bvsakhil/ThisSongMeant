@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getUserId } from "@/lib/user"
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 interface Song {
   id: string
@@ -17,7 +16,6 @@ interface Song {
   color?: string
   spotify_url?: string
   user_likes: boolean
-  user_id?: string
 }
 
 interface MusicCardProps {
@@ -25,36 +23,10 @@ interface MusicCardProps {
 }
 
 export function MusicCard({ song }: MusicCardProps) {
-  const [likes, setLikes] = useState(song.likes || 0)
-  const [hasLiked, setHasLiked] = useState(song.user_likes || false)
+  // Use useEffect to handle client-side initialization
+  const [likes, setLikes] = useState(0)
+  const [hasLiked, setHasLiked] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
-  const [currentUser, setCurrentUser] = useState<any>(null)
-  const [displayUsername, setDisplayUsername] = useState(song.username)
-  const supabase = createClientComponentClient()
-
-  // Get current user and their username
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        setCurrentUser(user)
-        
-        // If this song was posted by the current user, get their current username
-        if (user.id === song.user_id) {
-          const { data: userData } = await supabase
-            .from('users')
-            .select('username')
-            .eq('id', user.id)
-            .single()
-          
-          if (userData?.username) {
-            setDisplayUsername(userData.username)
-          }
-        }
-      }
-    }
-    getUser()
-  }, [song.user_id])
 
   useEffect(() => {
     setLikes(song.likes)
@@ -66,37 +38,31 @@ export function MusicCard({ song }: MusicCardProps) {
 
     try {
       setIsUpdating(true)
-      const { data: { user } } = await supabase.auth.getUser()
+      const userId = getUserId()
       
-      if (!user) {
-        // Handle not logged in case
-        console.log('User must be logged in to like songs')
-        return
-      }
-
       // Optimistic update
       setHasLiked(!hasLiked)
       setLikes(prev => hasLiked ? prev - 1 : prev + 1)
 
-      if (hasLiked) {
-        // Unlike: Delete the like
-        await supabase
-          .from('song_likes')
-          .delete()
-          .eq('song_id', song.id)
-          .eq('user_id', user.id)
-      } else {
-        // Like: Insert new like
-        await supabase
-          .from('song_likes')
-          .insert([
-            {
-              song_id: song.id,
-              user_id: user.id
-            }
-          ])
+      const response = await fetch(`/api/songs/${song.id}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update like')
       }
 
+      const { liked } = await response.json()
+      
+      // Update state if the server response differs from our optimistic update
+      if (liked !== !hasLiked) {
+        setHasLiked(liked)
+        setLikes(prev => liked ? prev + 1 : prev - 1)
+      }
     } catch (error) {
       console.error('Error updating like:', error)
       // Revert the optimistic update if there was an error
@@ -178,10 +144,7 @@ export function MusicCard({ song }: MusicCardProps) {
 
         {/* Username and likes */}
         <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-500">
-            - {displayUsername}
-            {currentUser?.id === song.user_id && " (you)"}
-          </span>
+          <span className="text-xs text-gray-500">- {song.username}</span>
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
