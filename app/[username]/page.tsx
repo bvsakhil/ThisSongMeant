@@ -12,12 +12,13 @@ interface PageProps {
 
 export default async function UsernamePage({ params }: PageProps) {
   const supabase = createServerComponentClient({ cookies })
-  
+  const { username } = await params
+
   // Check if username exists in the database
   const { data: userData, error } = await supabase
     .from('users')
     .select('*')
-    .eq('username', params.username)
+    .eq('username', username)
     .single()
 
   // If username doesn't exist, return 404
@@ -25,7 +26,7 @@ export default async function UsernamePage({ params }: PageProps) {
     notFound()
   }
 
-  return <ProfileContent username={params.username} />
+  return <ProfileContent username={username} />
 }
 
 export async function generateMetadata(
@@ -33,12 +34,13 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const supabase = createServerComponentClient({ cookies })
-  
+  const { username } = await params
+
   // Fetch user data
   const { data: user } = await supabase
     .from('users')
     .select('username, full_name, email')
-    .eq('username', params.username)
+    .eq('username', username)
     .single()
 
   if (!user) {
@@ -53,7 +55,7 @@ export async function generateMetadata(
     .select('*', { count: 'exact', head: true })
     .eq('user_email', user.email)
 
-  const title = `${params.username}'s Music Scrapbook`
+  const title = `${username}'s Music Scrapbook`
   const description = `Collection of songs that mean something to me`
 
   return {
@@ -64,7 +66,7 @@ export async function generateMetadata(
       description,
       images: [
         {
-          url: `/api/og?username=${params.username}`,
+          url: `/api/og?username=${username}`,
           width: 1200,
           height: 630,
           alt: title,
@@ -75,7 +77,7 @@ export async function generateMetadata(
       card: 'summary_large_image',
       title,
       description,
-      images: [`/api/og?username=${params.username}`],
+      images: [`/api/og?username=${username}`],
     },
   }
 } 
