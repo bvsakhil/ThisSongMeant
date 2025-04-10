@@ -25,8 +25,8 @@ interface MusicCardProps {
 }
 
 export function MusicCard({ song }: MusicCardProps) {
-  const [likes, setLikes] = useState(0)
-  const [hasLiked, setHasLiked] = useState(false)
+  const [likes, setLikes] = useState(song.likes || 0)
+  const [hasLiked, setHasLiked] = useState(song.user_likes || false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [displayUsername, setDisplayUsername] = useState(song.username)
@@ -66,31 +66,37 @@ export function MusicCard({ song }: MusicCardProps) {
 
     try {
       setIsUpdating(true)
-      const userId = getUserId()
+      const { data: { user } } = await supabase.auth.getUser()
       
+      if (!user) {
+        // Handle not logged in case
+        console.log('User must be logged in to like songs')
+        return
+      }
+
       // Optimistic update
       setHasLiked(!hasLiked)
       setLikes(prev => hasLiked ? prev - 1 : prev + 1)
 
-      const response = await fetch(`/api/songs/${song.id}/like`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to update like')
+      if (hasLiked) {
+        // Unlike: Delete the like
+        await supabase
+          .from('song_likes')
+          .delete()
+          .eq('song_id', song.id)
+          .eq('user_id', user.id)
+      } else {
+        // Like: Insert new like
+        await supabase
+          .from('song_likes')
+          .insert([
+            {
+              song_id: song.id,
+              user_id: user.id
+            }
+          ])
       }
 
-      const { liked } = await response.json()
-      
-      // Update state if the server response differs from our optimistic update
-      if (liked !== !hasLiked) {
-        setHasLiked(liked)
-        setLikes(prev => liked ? prev + 1 : prev - 1)
-      }
     } catch (error) {
       console.error('Error updating like:', error)
       // Revert the optimistic update if there was an error
