@@ -1,13 +1,13 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useMobile } from "@/hooks/use-mobile"
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 interface Song {
   id: string
@@ -43,6 +43,29 @@ export function AddSongModal({
   const [note, setNote] = useState("")
   const [username, setUsername] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const supabase = createClientComponentClient()
+
+  // Get current user and their username
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        // Get username from users table
+        const { data: userData } = await supabase
+          .from('users')
+          .select('username')
+          .eq('id', user.id)
+          .single()
+        
+        if (userData?.username) {
+          setUsername(userData.username)
+        }
+      }
+      setUser(user)
+    }
+    getUser()
+  }, [])
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -73,12 +96,13 @@ export function AddSongModal({
       username,
       likes: 0,
       color: getRandomColor(),
-      spotifyUrl: selectedSong?.external_urls?.spotify
+      spotifyUrl: selectedSong?.external_urls?.spotify,
+      userId: user?.id,
+      userEmail: user?.email
     }
 
     onAddStory(newStory)
     setNote("")
-    setUsername("")
   }
 
   // Helper function to generate random colors for stories
@@ -160,17 +184,20 @@ export function AddSongModal({
                 />
               </div>
 
-              <div>
-                <Input
-                  id="username"
-                  placeholder="Add your name"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="h-12 text-base p-3"
-                  required
-                />
-                <p className="mt-1 text-xs text-gray-500">This will be displayed with your story on the wall.</p>
-              </div>
+              {/* Only show username input for non-logged in users */}
+              {!user && (
+                <div>
+                  <Input
+                    id="username"
+                    placeholder="Add your name"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="h-12 text-base p-3"
+                    required
+                  />
+                  <p className="mt-1 text-xs text-gray-500">This will be displayed with your story on the wall.</p>
+                </div>
+              )}
 
               <div className="pt-2">
                 <Button
