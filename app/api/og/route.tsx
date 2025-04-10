@@ -108,7 +108,7 @@ export async function GET(request: Request) {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`${process.env.VERCEL_URL ? process.env.VERCEL_URL : ''}/images/coverphoto_${String(i + 1).padStart(2, '0')}.png`}
+                  src={`${process.env.PRODUCTION_URL ? process.env.PRODUCTION_URL : ''}/images/coverphoto_${String(i + 1).padStart(2, '0')}.png`}
                   alt={`Album cover ${i + 1}`}
                   style={{
                     width: '100%',
