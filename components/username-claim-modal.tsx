@@ -68,7 +68,11 @@ export function UsernameClaimModal({ isOpen, onComplete, user }: UsernameClaim) 
 
       if (updateError) throw updateError
 
-      onComplete()
+      // Call onComplete callback
+      await onComplete()
+      
+      // Redirect to the user's profile page
+      window.location.href = `/${username.toLowerCase()}`
     } catch (error) {
       console.error('Error claiming username:', error)
       setError('Failed to claim username. Please try again.')

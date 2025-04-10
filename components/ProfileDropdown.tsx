@@ -11,23 +11,33 @@ interface ProfileDropdownProps {
 export function ProfileDropdown({ user }: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [username, setUsername] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const supabase = createClientComponentClient()
 
   useEffect(() => {
     const fetchUsername = async () => {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('username')
-        .eq('id', user.id)
-        .single()
-      
-      if (userData) {
-        setUsername(userData.username)
+      setIsLoading(true)
+      try {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('username')
+          .eq('id', user.id)
+          .single()
+        
+        if (userData?.username) {
+          setUsername(userData.username)
+        }
+      } catch (error) {
+        console.error('Error fetching username:', error)
+      } finally {
+        setIsLoading(false)
       }
     }
 
-    fetchUsername()
+    if (user?.id) {
+      fetchUsername()
+    }
   }, [user.id])
 
   const handleLogout = async () => {
@@ -55,14 +65,17 @@ export function ProfileDropdown({ user }: ProfileDropdownProps) {
         <div className="absolute right-0 mt-2 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5">
           <button
             onClick={() => {
-              if (username) {
+              if (username && !isLoading) {
                 router.push(`/${username}`)
+                setIsOpen(false)
               }
-              setIsOpen(false)
             }}
-            className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+            className={`block w-full px-4 py-2 text-left text-sm ${
+              isLoading ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'
+            }`}
+            disabled={isLoading}
           >
-            Profile
+            {isLoading ? 'Loading...' : 'Profile'}
           </button>
           <button
             onClick={handleLogout}

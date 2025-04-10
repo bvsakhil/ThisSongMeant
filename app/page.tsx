@@ -338,9 +338,24 @@ export default function Home() {
     await signInWithGoogle()
   }
 
-  const handleUsernameClaimed = () => {
+  const handleUsernameClaimed = async () => {
     setShowUsernameModal(false)
-    router.refresh()
+    
+    // Fetch updated user data including the username
+    const { data: { user: updatedUser } } = await supabase.auth.getUser()
+    if (updatedUser) {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('username')
+        .eq('id', updatedUser.id)
+        .single()
+      
+      if (userData?.username) {
+        setUser(updatedUser)
+        // Force a hard refresh to ensure all states are updated
+        window.location.href = `/${userData.username}`
+      }
+    }
   }
 
   return (
