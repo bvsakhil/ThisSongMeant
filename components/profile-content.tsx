@@ -94,12 +94,23 @@ export default function ProfileContent({ username }: ProfileContentProps) {
           // Fetch stories immediately after getting user data
           const { data: stories, error: storiesError } = await supabase
             .from('songs')
-            .select('*')
+            .select(`
+              *,
+              likes:song_likes(count),
+              user_likes:song_likes!inner(user_id)
+            `)
             .eq('user_email', userData.email)
             .order('created_at', { ascending: false })
 
           if (storiesError) throw storiesError
-          setStories(stories || [])
+
+          const transformedStories = stories?.map(story => ({
+            ...story,
+            likes: story.likes?.length || 0,
+            user_likes: story.user_likes?.length > 0
+          }))
+
+          setStories(transformedStories || [])
         }
       } catch (error) {
         console.error('Error fetching data:', error)
@@ -295,7 +306,7 @@ export default function ProfileContent({ username }: ProfileContentProps) {
         {/* Back Button */}
         <button
           onClick={() => router.push('/')}
-          className="fixed left-6 md:left-8 top-4 md:top-6 z-50 flex items-center justify-center rounded-full bg-white p-2 shadow-sm hover:bg-gray-50"
+          className="fixed left-6 md:left-8 top-20 z-50 flex items-center justify-center rounded-full bg-white p-2 shadow-sm hover:bg-gray-50"
         >
           <ArrowLeft className="h-5 w-5 text-[#333]" />
         </button>

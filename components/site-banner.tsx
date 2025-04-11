@@ -10,7 +10,6 @@ export function SiteBanner({ message }: SiteBannerProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [hasAnimated, setHasAnimated] = useState(false)
 
-  // Subtle animation effect when the component mounts
   useEffect(() => {
     const timer = setTimeout(() => {
       setHasAnimated(true)
@@ -22,7 +21,7 @@ export function SiteBanner({ message }: SiteBannerProps) {
   return (
     <div
       className={`relative overflow-hidden transition-all duration-500 ease-in-out ${
-        hasAnimated ? "bg-[#FFF2CC]" : "bg-[#FFF8E1]"
+        hasAnimated ? "bg-[#333333]" : "bg-[#444444]"
       }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -32,7 +31,7 @@ export function SiteBanner({ message }: SiteBannerProps) {
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: "radial-gradient(#333 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
             backgroundSize: "20px 20px",
           }}
         ></div>
@@ -40,7 +39,7 @@ export function SiteBanner({ message }: SiteBannerProps) {
 
       <div className="container mx-auto px-4 py-3 relative">
         <p
-          className={`text-center text-sm font-medium text-[#333] transition-all duration-300 ${
+          className={`text-center text-sm font-medium text-white transition-all duration-300 ${
             isHovered ? "tracking-wide scale-[1.01]" : "animate-subtle-pulse"
           }`}
         >
@@ -49,7 +48,7 @@ export function SiteBanner({ message }: SiteBannerProps) {
       </div>
 
       {/* Subtle gradient border at bottom */}
-      <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-amber-300 to-transparent opacity-50"></div>
+      <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-gray-500 to-transparent opacity-50"></div>
 
       {/* Add the enhanced pulse animation */}
       <style jsx global>{`
@@ -57,20 +56,20 @@ export function SiteBanner({ message }: SiteBannerProps) {
           0% {
             opacity: 0.9;
             transform: scale(1);
-            text-shadow: 0 0 0px rgba(0,0,0,0);
-            color: #333333;
+            text-shadow: 0 0 0px rgba(255,255,255,0);
+            color: #ffffff;
           }
           50% {
             opacity: 1;
             transform: scale(1.02);
-            text-shadow: 0 0 3px rgba(0,0,0,0.15);
-            color: #000000;
+            text-shadow: 0 0 3px rgba(255,255,255,0.3);
+            color: #ffffff;
           }
           100% {
             opacity: 0.9;
             transform: scale(1);
-            text-shadow: 0 0 0px rgba(0,0,0,0);
-            color: #333333;
+            text-shadow: 0 0 0px rgba(255,255,255,0);
+            color: #ffffff;
           }
         }
         

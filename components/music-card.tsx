@@ -29,8 +29,8 @@ export function MusicCard({ song }: MusicCardProps) {
   const [isUpdating, setIsUpdating] = useState(false)
 
   useEffect(() => {
-    setLikes(song.likes)
-    setHasLiked(song.user_likes)
+    setLikes(song.likes || 0)
+    setHasLiked(song.user_likes || false)
   }, [song.likes, song.user_likes])
 
   const handleLike = async () => {
@@ -163,7 +163,7 @@ export function MusicCard({ song }: MusicCardProps) {
               />
             </Button>
             <span className="text-xs font-medium text-gray-700">
-              {likes}
+              {likes || 0}
             </span>
           </div>
         </div>
