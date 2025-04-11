@@ -12,7 +12,7 @@ export async function POST(
 ) {
   try {
     const { userId } = await request.json()
-    const songId = params.id
+    const { id: songId} = await params
 
     // Check if like already exists
     const { data: existingLike, error: checkError } = await supabase
@@ -38,7 +38,7 @@ export async function POST(
       return NextResponse.json({ liked: false })
     } else {
       // Add new like
-      const { error: insertError } = await supabase
+      const { data: newLike, error: insertError } = await supabase
         .from('likes')
         .insert([
           {
@@ -46,7 +46,6 @@ export async function POST(
             user_id: userId
           }
         ])
-
       if (insertError) throw insertError
       return NextResponse.json({ liked: true })
     }

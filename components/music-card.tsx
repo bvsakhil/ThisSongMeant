@@ -39,7 +39,6 @@ export function MusicCard({ song }: MusicCardProps) {
     try {
       setIsUpdating(true)
       const userId = getUserId()
-      
       // Optimistic update
       setHasLiked(!hasLiked)
       setLikes(prev => hasLiked ? prev - 1 : prev + 1)

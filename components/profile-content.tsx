@@ -13,6 +13,7 @@ import { SiteBanner } from '@/components/site-banner'
 import { signInWithGoogle } from '@/lib/auth'
 import { AddSongModal } from '@/components/add-song-modal'
 import axios from 'axios'
+import { getUserId } from '@/lib/user'
 
 interface ProfileContentProps {
   username: string
@@ -96,21 +97,23 @@ export default function ProfileContent({ username }: ProfileContentProps) {
             .from('songs')
             .select(`
               *,
-              likes:song_likes(count),
-              user_likes:song_likes!inner(user_id)
+              likes: likes(count),
+              user_likes:likes(user_id)
             `)
             .eq('user_email', userData.email)
             .order('created_at', { ascending: false })
 
           if (storiesError) throw storiesError
 
-          const transformedStories = stories?.map(story => ({
+          const userId = getUserId()
+          // Transform stories to include likes count and user_likes boolean
+          const transformedStories = (stories || []).map(story => ({
             ...story,
-            likes: story.likes?.length || 0,
-            user_likes: story.user_likes?.length > 0
+            likes: story.likes?.[0]?.count || 0,
+            user_likes: story.user_likes?.some((like: any) => like.user_id === (user?.id || userId)) || false
           }))
 
-          setStories(transformedStories || [])
+          setStories(transformedStories)
         }
       } catch (error) {
         console.error('Error fetching data:', error)
@@ -298,7 +301,7 @@ export default function ProfileContent({ username }: ProfileContentProps) {
       {/* Banner at the very top - only show if not logged in */}
       {!currentUser && (
         <div onClick={handleBannerClick} style={{ cursor: 'pointer' }}>
-          <SiteBanner message="👉 Save songs to your profile. Build your music scrapbook. 👈" />
+          <SiteBanner message="👉 Create your profile to build your music scrapbook. 👈" />
         </div>
       )}
 
@@ -306,7 +309,7 @@ export default function ProfileContent({ username }: ProfileContentProps) {
         {/* Back Button */}
         <button
           onClick={() => router.push('/')}
-          className="fixed left-6 md:left-8 top-20 z-50 flex items-center justify-center rounded-full bg-white p-2 shadow-sm hover:bg-gray-50"
+          className="fixed left-6 md:left-8 top-20 md:top-20 z-50 flex items-center justify-center rounded-full bg-white p-2 shadow-sm hover:bg-gray-50"
         >
           <ArrowLeft className="h-5 w-5 text-[#333]" />
         </button>
