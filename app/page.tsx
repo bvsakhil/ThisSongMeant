@@ -363,7 +363,7 @@ export default function Home() {
       {/* Banner at the very top - only show if not logged in */}
       {!user && (
         <div onClick={handleBannerClick} style={{ cursor: 'pointer' }}>
-          <SiteBanner message="👉 Create your profile to build your music scrapbook. 👈" />
+          <SiteBanner message="👉 Sign-up to build your music scrapbook. 👈" />
         </div>
       )}
 
