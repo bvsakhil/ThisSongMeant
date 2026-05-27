@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input"
 import { MusicCard } from "@/components/music-card"
 import { AddSongModal } from "@/components/add-song-modal"
 import Image from "next/image"
-import { Plus } from "lucide-react"
+import Link from "next/link"
+import { Plus, Search } from "lucide-react"
 import axios from "axios"
 import { getUserId } from "@/lib/user"
 import { LoadingSkeleton } from "@/components/loading-skeleton"
@@ -381,9 +382,21 @@ export default function Home() {
           {totalSongs} {totalSongs === 1 ? 'story' : 'songs'} meant something
         </p>
 
-        {/* Main search field */}
-        <div className="max-w-xs mx-auto mb-8 md:mb-10">
-          <SearchInput isSticky={false} />
+        {/* Main actions */}
+        <div className="mb-8 flex flex-col items-center justify-center gap-3 sm:flex-row md:mb-10">
+          <div className="w-full max-w-xs sm:w-auto">
+            <SearchInput isSticky={false} />
+          </div>
+          <Button
+            asChild
+            variant="outline"
+            className="h-12 rounded-full border-[#333] bg-transparent px-5 text-base text-[#333] hover:bg-black/5"
+          >
+            <Link href="/search" className="inline-flex items-center gap-2">
+              <Search className="h-4 w-4" />
+              Explore stories
+            </Link>
+          </Button>
         </div>
 
         {/* Floating add button */}

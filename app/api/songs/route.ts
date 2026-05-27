@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -62,18 +61,30 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
+    const query = searchParams.get('q')?.trim() || ''
     const page = parseInt(searchParams.get('page') || '1')
     const limit = 9
     const start = (page - 1) * limit
     const end = start + limit - 1
+    const searchFilter = query
+      ? `title.ilike.%${query.replace(/,/g, ' ')}%,artist.ilike.%${query.replace(/,/g, ' ')}%`
+      : ''
 
     // First get total count
-    const { count: totalCount } = await supabase
+    const countQuery = supabase
       .from('songs')
       .select('*', { count: 'exact', head: true })
 
+    if (searchFilter) {
+      countQuery.or(searchFilter)
+    }
+
+    const { count: totalCount, error: countError } = await countQuery
+
+    if (countError) throw countError
+
     // Then get paginated songs
-    const { data: songs, error: songsError } = await supabase
+    const songsQuery = supabase
       .from('songs')
       .select(`
         *,
@@ -81,6 +92,12 @@ export async function GET(request: Request) {
       `)
       .order('created_at', { ascending: false })
       .range(start, end)
+
+    if (searchFilter) {
+      songsQuery.or(searchFilter)
+    }
+
+    const { data: songs, error: songsError } = await songsQuery
 
     if (songsError) throw songsError
 
@@ -101,7 +118,7 @@ export async function GET(request: Request) {
     }
 
     // Transform the data
-    const songsWithLikes = songs.map(song => ({
+    const songsWithLikes = (songs || []).map(song => ({
       ...song,
       likes: song.likes[0]?.count || 0,
       user_likes: !!userLikes[song.id]
@@ -120,4 +137,3 @@ export async function GET(request: Request) {
     )
   }
 } 
-
