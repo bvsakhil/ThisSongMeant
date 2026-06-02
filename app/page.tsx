@@ -54,6 +54,8 @@ export default function Home() {
   const floatingSearchRef = useRef<HTMLDivElement>(null)
   const [showSearchInput, setShowSearchInput] = useState(false)
   const observerTarget = useRef<HTMLDivElement>(null)
+  const isFetchingSongsRef = useRef(false)
+  const loadedPagesRef = useRef<Set<number>>(new Set())
   const [user, setUser] = useState<User | null>(null)
   const supabase = createClientComponentClient()
   const [showUsernameModal, setShowUsernameModal] = useState(false)
@@ -135,7 +137,12 @@ export default function Home() {
   }, [user])
 
   const fetchSongs = async (page: number, append = false) => {
+    if (isFetchingSongsRef.current || (append && loadedPagesRef.current.has(page))) {
+      return
+    }
+
     try {
+      isFetchingSongsRef.current = true
       const loadingState = append ? setIsLoadingMore : setIsLoadingStories
       loadingState(true)
       
@@ -145,7 +152,18 @@ export default function Home() {
       
       const data = await response.json()
       
-      setStories(prev => append ? [...prev, ...data.songs] : data.songs)
+      loadedPagesRef.current = append
+        ? new Set([...Array.from(loadedPagesRef.current), page])
+        : new Set([page])
+
+      setStories(prev => {
+        if (!append) return data.songs
+
+        const existingIds = new Set(prev.map((story) => story.id))
+        const newSongs = data.songs.filter((song: any) => !existingIds.has(song.id))
+
+        return [...prev, ...newSongs]
+      })
       setHasMore(data.hasMore)
       setTotalSongs(data.total || data.songs.length)
     } catch (error) {
@@ -153,6 +171,7 @@ export default function Home() {
     } finally {
       const loadingState = append ? setIsLoadingMore : setIsLoadingStories
       loadingState(false)
+      isFetchingSongsRef.current = false
     }
   }
 
@@ -166,13 +185,13 @@ export default function Home() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore && !isFetchingSongsRef.current) {
           const nextPage = currentPage + 1
           setCurrentPage(nextPage)
           fetchSongs(nextPage, true)
         }
       },
-      { threshold: 0.1 }
+      { rootMargin: "800px 0px", threshold: 0.01 }
     )
 
     if (observerTarget.current) {
@@ -373,7 +392,15 @@ export default function Home() {
         {user && <ProfileDropdown user={user} />}
       </header>
 
-      <main className="pt-20 md:pt-16 px-10 pb-4">
+      <main className="pt-12 md:pt-10 px-10 pb-4">
+        <Image
+          src="/images/thissongmeant-logo.png"
+          alt="thissongmeant"
+          width={1324}
+          height={216}
+          priority
+          className="mx-auto mb-4 h-auto w-36 sm:w-40 md:w-44"
+        />
         <h1 className="text-center font-instrument text-4xl md:text-5xl text-[#333] mb-2 md:mb-3 font-bold tracking-tight">
           What's your favorite song mean to you?
         </h1>

@@ -63,7 +63,7 @@ export async function GET(request: Request) {
     const userId = searchParams.get('userId')
     const query = searchParams.get('q')?.trim() || ''
     const page = parseInt(searchParams.get('page') || '1')
-    const limit = 9
+    const limit = 12
     const start = (page - 1) * limit
     const end = start + limit - 1
     const searchFilter = query
@@ -91,6 +91,7 @@ export async function GET(request: Request) {
         likes: likes(count)
       `)
       .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
       .range(start, end)
 
     if (searchFilter) {
