@@ -17,6 +17,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { User } from '@supabase/supabase-js'
 import { ProfileDropdown } from '@/components/ProfileDropdown'
 import { UsernameClaimModal } from '@/components/username-claim-modal'
+import { ShareStoryModal } from "@/components/share-story-modal"
 import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation'
 
@@ -46,7 +47,7 @@ export default function Home() {
   const [showDropdown, setShowDropdown] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedSong, setSelectedSong] = useState<any>(null)
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+  const [shareStory, setShareStory] = useState<any>(null)
   const [showStickySearch, setShowStickySearch] = useState(false)
   const [showFloatingSearch, setShowFloatingSearch] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
@@ -234,11 +235,7 @@ export default function Home() {
       
       setIsModalOpen(false)
       setSelectedSong(null)
-
-      setShowSuccessMessage(true)
-      setTimeout(() => {
-        setShowSuccessMessage(false)
-      }, 3000)
+      setShareStory(savedSong)
 
       window.scrollTo({
         top: 0,
@@ -246,6 +243,7 @@ export default function Home() {
       })
     } catch (error) {
       console.error('Error saving song:', error)
+      throw error
     }
   }
 
@@ -449,13 +447,6 @@ export default function Home() {
           </>
         )}
 
-        {/* Success message */}
-        {showSuccessMessage && (
-          <div className="fixed top-4 right-4 z-50 rounded-md bg-green-100 p-4 shadow-md font-sans">
-            <p className="text-green-800">Your story has been added to the wall!</p>
-          </div>
-        )}
-
         <div className="mx-auto max-w-6xl">
           <section className="mb-12">
             {isLoadingStories ? (
@@ -501,6 +492,11 @@ export default function Home() {
         selectedSong={selectedSong}
         onSongSelect={() => {}}
         onAddStory={handleAddStory}
+      />
+
+      <ShareStoryModal
+        story={shareStory}
+        onClose={() => setShareStory(null)}
       />
 
       {/* Username Claim Modal */}

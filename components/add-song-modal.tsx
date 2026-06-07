@@ -29,7 +29,7 @@ interface AddSongModalProps {
   searchResults: Song[]
   selectedSong: Song | null
   onSongSelect: (song: Song) => void
-  onAddStory: (story: any) => void
+  onAddStory: (story: any) => void | Promise<void>
 }
 
 export function AddSongModal({
@@ -82,8 +82,10 @@ export function AddSongModal({
 
   if (!isOpen) return null
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSubmitting) return
+    setIsSubmitting(true)
     
     // Transform the Spotify track data into your story format
     const newStory = {
@@ -101,8 +103,12 @@ export function AddSongModal({
       userEmail: user?.email
     }
 
-    onAddStory(newStory)
-    setNote("")
+    try {
+      await onAddStory(newStory)
+      setNote("")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   // Helper function to generate random colors for stories

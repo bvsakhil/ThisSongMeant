@@ -14,6 +14,7 @@ import { signInWithGoogle } from '@/lib/auth'
 import { AddSongModal } from '@/components/add-song-modal'
 import axios from 'axios'
 import { getUserId } from '@/lib/user'
+import { ShareStoryModal } from '@/components/share-story-modal'
 
 interface ProfileContentProps {
   username: string
@@ -25,7 +26,7 @@ export default function ProfileContent({ username }: ProfileContentProps) {
   const [stories, setStories] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showShareMessage, setShowShareMessage] = useState(false)
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+  const [shareStory, setShareStory] = useState<any>(null)
   const [showStickySearch, setShowStickySearch] = useState(false)
   const [showFloatingSearch, setShowFloatingSearch] = useState(false)
   const [showSearchInput, setShowSearchInput] = useState(false)
@@ -164,11 +165,7 @@ export default function ProfileContent({ username }: ProfileContentProps) {
       setStories(prevStories => [savedSong, ...prevStories])
       setIsModalOpen(false)
       setSelectedSong(null)
-
-      setShowSuccessMessage(true)
-      setTimeout(() => {
-        setShowSuccessMessage(false)
-      }, 3000)
+      setShareStory(savedSong)
 
       window.scrollTo({
         top: 0,
@@ -176,6 +173,7 @@ export default function ProfileContent({ username }: ProfileContentProps) {
       })
     } catch (error) {
       console.error('Error saving song:', error)
+      throw error
     }
   }
 
@@ -398,13 +396,6 @@ export default function ProfileContent({ username }: ProfileContentProps) {
         </div>
       )}
 
-      {/* Success message */}
-      {showSuccessMessage && (
-        <div className="fixed top-4 right-4 z-50 rounded-md bg-green-100 p-4 shadow-md font-sans">
-          <p className="text-green-800">Your story has been added to your collection!</p>
-        </div>
-      )}
-
       {/* Add Song Modal */}
       <AddSongModal
         isOpen={isModalOpen}
@@ -416,6 +407,11 @@ export default function ProfileContent({ username }: ProfileContentProps) {
         selectedSong={selectedSong}
         onSongSelect={() => {}}
         onAddStory={handleAddStory}
+      />
+
+      <ShareStoryModal
+        story={shareStory}
+        onClose={() => setShareStory(null)}
       />
     </div>
   )

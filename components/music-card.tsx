@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Heart } from "lucide-react"
+import { Heart, Share2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getUserId } from "@/lib/user"
+import { shareStoryImage } from "@/lib/share-story-image"
 
 interface Song {
   id: string
@@ -27,6 +28,7 @@ export function MusicCard({ song }: MusicCardProps) {
   const [likes, setLikes] = useState(0)
   const [hasLiked, setHasLiked] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [isSharing, setIsSharing] = useState(false)
 
   useEffect(() => {
     setLikes(song.likes || 0)
@@ -69,6 +71,23 @@ export function MusicCard({ song }: MusicCardProps) {
       setLikes(prev => hasLiked ? prev + 1 : prev - 1)
     } finally {
       setIsUpdating(false)
+    }
+  }
+
+  const handleShareCard = async () => {
+    if (isSharing) return
+
+    try {
+      setIsSharing(true)
+      await shareStoryImage({
+        songId: song.id,
+        title: song.title,
+        artist: song.artist,
+      })
+    } catch (error) {
+      console.error('Error sharing card:', error)
+    } finally {
+      setIsSharing(false)
     }
   }
 
@@ -145,6 +164,16 @@ export function MusicCard({ song }: MusicCardProps) {
         <div className="flex items-center justify-between">
           <span className="text-xs text-gray-500">- {song.username}</span>
           <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 md:h-7 md:w-7 text-gray-400 hover:text-gray-700"
+              onClick={handleShareCard}
+              disabled={isSharing}
+              aria-label="Share as image"
+            >
+              <Share2 className="h-4 w-4 md:h-3.5 md:w-3.5" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
