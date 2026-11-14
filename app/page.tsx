@@ -11,8 +11,6 @@ import { Plus, Search } from "lucide-react"
 import axios from "axios"
 import { getUserId } from "@/lib/user"
 import { LoadingSkeleton } from "@/components/loading-skeleton"
-import { SiteBanner } from "@/components/site-banner"
-import { signInWithGoogle } from "@/lib/auth"
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { User } from '@supabase/supabase-js'
 import { ProfileDropdown } from '@/components/ProfileDropdown'
@@ -352,10 +350,6 @@ export default function Home() {
     )
   }
 
-  const handleBannerClick = async () => {
-    await signInWithGoogle()
-  }
-
   const handleUsernameClaimed = async () => {
     setShowUsernameModal(false)
     
@@ -378,13 +372,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#FFF8E1]">
-      {/* Banner at the very top - only show if not logged in */}
-      {!user && (
-        <div onClick={handleBannerClick} style={{ cursor: 'pointer' }}>
-          <SiteBanner message="👉 Sign-up to build your music scrapbook. 👈" />
-        </div>
-      )}
-
       {/* Header with profile dropdown if logged in */}
       <header className="fixed top-4 md:top-6 right-0 left-0 z-50 flex items-center justify-end px-6 md:px-8 bg-transparent">
         {user && <ProfileDropdown user={user} />}
